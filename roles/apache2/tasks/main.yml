@@ -1,0 +1,22 @@
+---
+- name: install apache2
+  package:
+    name: apache2
+
+- name: template config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - dest: /etc/apache2/apache2.conf
+      src: apache2.conf.j2
+    - dest: /etc/apache2/ports.conf
+      src: ports.conf.j2
+  notify:
+    - restart apache2
+
+- name: maintain apache2 service
+  service:
+    name: apache2
+    enabled: true
+    state: started

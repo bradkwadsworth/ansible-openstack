@@ -1,0 +1,12 @@
+---
+- include: common.yml
+- include: api.yml
+  when: neutron_is_api
+- include: agent.yml
+  when: neutron_is_agent
+- include: l3.yml
+  when: neutron_is_l3
+- include: dhcp.yml
+  when: neutron_is_dhcp
+- include: metadata.yml
+  when: neutron_is_metadata

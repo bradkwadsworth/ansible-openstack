@@ -1,0 +1,82 @@
+---
+- hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Gather facts
+      setup: # aka gather_facts
+
+- hosts: neutron-api
+  post_tasks:
+    - name: create neutron database
+      mysql_db:
+        name: neutron
+        state: present
+
+    - name: create database users
+      mysql_user:
+        name: neutron
+        password: password
+        host: localhost
+        priv: neutron.*:ALL
+        state: present
+
+    - name: create /openstack rabbitmq vhost
+      rabbitmq_vhost:
+        name: /openstack
+        state: present
+
+    - name: create rabbitmq users
+      rabbitmq_user:
+        user: openstack
+        password: password
+        vhost: /openstack
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+        state: present
+  roles:
+    - role: mariadb
+    - role: rabbitmq
+
+- hosts: neutron-api
+  vars:
+    neutron_is_api: true
+    neutron_is_agent: true
+    neutron_is_l3: true
+    neutron_is_dhcp: true
+    neutron_is_metadata: true
+    neutron_ovs_agent_local_ip: "{{ ansible_enp0s3.ipv4.address }}"
+  post_tasks:
+    - name: check if neutron database is initialized
+      command: "mysql -u neutron -p{{ neutron_db_passwd }} -D neutron -e 'SELECT * from subnets;'"
+      run_once: true
+      changed_when: false
+      ignore_errors: true
+      register: st_db
+
+    - name: initialize neutron database
+      command: neutron-db-manage --config-file /etc/neutron/neutron.conf
+        --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head
+      become_user: neutron
+      run_once: true
+      when: st_db.rc != 0
+
+    - name: create bridge br-provider
+      openvswitch_bridge:
+        bridge: br-provider
+        state: present
+
+    - name: attach br-provider to enp0s8
+      openvswitch_port:
+        bridge: br-provider
+        port: enp0s8
+        state: present
+      notify:
+        - restart neutron services
+        
+  roles:
+    - role: openvswitch
+    - role: neutron

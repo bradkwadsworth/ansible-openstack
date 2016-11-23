@@ -1,0 +1,11 @@
+---
+- name: install nova-conductor
+  package:
+    name: nova-conductor
+    state: present
+
+- name: maintain nova-conductor
+  service:
+    name: nova-conductor
+    enabled: true
+    state: started

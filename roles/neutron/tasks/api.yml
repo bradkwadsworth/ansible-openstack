@@ -1,0 +1,22 @@
+---
+- name: install neutron-server packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pymysql
+    - neutron-server
+    - neutron-plugin-ml2
+
+- name: template /etc/neutron/plugins/ml2/ml2_conf.ini
+  template:
+    dest: /etc/neutron/plugins/ml2/ml2_conf.ini
+    src: ml2_conf.ini.j2
+  notify:
+    - restart neutron services
+
+- name: maintain neutron-server
+  service:
+    name: neutron-server
+    enabled: true
+    state: started

@@ -1,0 +1,35 @@
+---
+- hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Gather facts
+      setup: # aka gather_facts
+  post_tasks:
+    - name: create bridge br-ex
+      openvswitch_bridge:
+        bridge: br-ex
+        state: present
+
+    - name: create bridge br-provider
+      openvswitch_bridge:
+        bridge: br-provider
+        state: present
+
+    - name: attach br-ex to enp0s8
+      openvswitch_port:
+        bridge: br-ex
+        port: enp0s8
+        state: present
+
+    - name: attach br-provider to enp0s9
+      openvswitch_port:
+        bridge: br-provider
+        port: enp0s9
+        state: present
+
+
+  roles:
+    - role: openvswitch

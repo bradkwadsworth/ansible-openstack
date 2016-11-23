@@ -1,0 +1,12 @@
+---
+- hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Gather facts
+      setup: # aka gather_facts
+  roles:
+    - role: memcached
+    - role: dashboard

@@ -1,0 +1,7 @@
+---
+- name: restart nova services
+  service:
+    name: "{{ item.key }}"
+    state: restarted
+  when: item.value.service_enabled
+  with_dict: "{{ nova_services }}"

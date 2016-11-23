@@ -1,0 +1,5 @@
+---
+keystone_db_host: localhost
+keystone_db_user: keystone
+keystone_db_passwd: password
+keystone_admin_passwd: password

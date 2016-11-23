@@ -1,0 +1,9 @@
+---
+ntp_pools:
+  - 0.ubuntu.pool.ntp.org iburst
+  - 1.ubuntu.pool.ntp.org iburst
+  - 2.ubuntu.pool.ntp.org iburst
+  - 3.ubuntu.pool.ntp.org iburst
+ntp_restricts:
+  - 127.0.0.1
+  - ::1

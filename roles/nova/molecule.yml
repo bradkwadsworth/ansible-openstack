@@ -1,0 +1,19 @@
+---
+driver:
+  name: vagrant
+vagrant:
+  platforms:
+    - name: xenial64
+      box: ubuntu/xenial64
+  providers:
+    - name: virtualbox
+      type: virtualbox
+      options:
+        memory: 2048
+        cpus: 2
+  instances:
+    - name: nova
+      ansible_groups:
+        - group1
+verifier:
+  name: testinfra

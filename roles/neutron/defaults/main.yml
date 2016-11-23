@@ -1,0 +1,19 @@
+---
+neutron_is_api: false
+neutron_is_agent: false
+neutron_is_l3: false
+neutron_is_dhcp: false
+neutron_is_metadata: false
+neutron_db_user: neutron
+neutron_db_passwd: password
+neutron_db_host: localhost
+neutron_messaging_passwd: password
+neutron_messaging_host: localhost
+neutron_keystone_host: localhost
+neutron_keystone_passwd: password
+neutron_keystone_region: RegionOne
+neutron_memcached_servers: localhost:11211
+neutron_nova_passwd: password
+neutron_ovs_agent_local_ip: 127.0.0.1
+neutron_metadata_nova_metadata_ip: 127.0.0.1
+neutron_metadata_metadata_proxy_shared_secret: secret

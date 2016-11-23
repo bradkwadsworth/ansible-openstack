@@ -1,0 +1,22 @@
+---
+- hosts: all
+  gather_facts: False
+  vars:
+    rabbitmq_active_vhosts:
+      - openstack
+    rabbitmq_active_users:
+      - name: openstack
+        passwd: password
+        perms:
+          - vhost: /openstack
+            configure_priv: '.*'
+            read_priv: '.*'
+            write_priv: '.*'
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Gather facts
+      setup: # aka gather_facts
+  roles:
+    - role: rabbitmq

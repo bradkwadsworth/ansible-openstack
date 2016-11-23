@@ -1,0 +1,21 @@
+---
+- name: install packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - memcached
+    - python-memcache
+
+- name: template /etc/memcached.conf
+  template:
+    dest: /etc/memcached.conf
+    src: memcached.conf.j2
+  notify:
+    - restart memcached
+
+- name: maintain memcached service
+  service:
+    name: memcached
+    enabled: true
+    state: started

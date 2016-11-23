@@ -1,0 +1,18 @@
+---
+- name: install l3 agent
+  package:
+    name: neutron-l3-agent
+    state: present
+
+- name: template /etc/neutron/l3_agent.ini
+  template:
+    dest: /etc/neutron/l3_agent.ini
+    src: l3_agent.ini.j2
+  notify:
+    - restart neutron services
+
+- name: maintain neutron-l3-agent
+  service:
+    name: neutron-l3-agent
+    enabled: true
+    state: started

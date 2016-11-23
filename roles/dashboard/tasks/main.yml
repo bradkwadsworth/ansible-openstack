@@ -1,0 +1,12 @@
+---
+- name: install openstack-dashboard
+  package:
+    name: openstack-dashboard
+    state: present
+
+- name: template /etc/openstack-dashboard/local_settings.py
+  template:
+    dest: /etc/openstack-dashboard/local_settings.py
+    src: local_settings.py.j2
+  notify:
+    - restart apache2

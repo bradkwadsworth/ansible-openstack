@@ -1,0 +1,26 @@
+---
+- name: install keystone packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pymysql
+    - python-shade
+    - keystone
+
+- name: remove /var/lib/keystone/keystone.db
+  file:
+    path: /var/lib/keystone/keystone.db
+    state: absent
+
+- name: template /etc/keystone/keystone.conf
+  template:
+    dest: /etc/keystone/keystone.conf
+    src: keystone.conf.j2
+  notify:
+    - restart apache2
+
+- name: create admin-openrc file
+  template:
+    dest: /root/admin-openrc
+    src: admin-openrc.j2

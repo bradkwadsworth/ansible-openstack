@@ -1,0 +1,18 @@
+---
+- name: install neutron-openvswitch-agent
+  package:
+    name: neutron-openvswitch-agent
+    state: present
+
+- name: template /etc/neutron/plugins/ml2/openvswitch_agent.ini
+  template:
+    dest: /etc/neutron/plugins/ml2/openvswitch_agent.ini
+    src: openvswitch_agent.ini.j2
+  notify:
+    - restart neutron services
+
+- name: maintain neutron-openvswitch-agent
+  service:
+    name: neutron-openvswitch-agent
+    enabled: true
+    state: started

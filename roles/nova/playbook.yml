@@ -1,0 +1,82 @@
+---
+- hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Gather facts
+      setup: # aka gather_facts
+  post_tasks:
+    - name: create databases
+      mysql_db:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - nova
+        - nova_api
+
+    - name: create database users
+      mysql_user:
+        name: nova
+        password: password
+        host: localhost
+        priv: nova.*:ALL/nova_api.*:ALL
+        state: present
+
+    - name: create /openstack rabbitmq vhost
+      rabbitmq_vhost:
+        name: /openstack
+        state: present
+
+    - name: create rabbitmq users
+      rabbitmq_user:
+        user: openstack
+        password: password
+        vhost: /openstack
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+        state: present
+
+  roles:
+    - role: mariadb
+    - role: rabbitmq
+
+- hosts: all
+  vars:
+    nova_is_api: true
+    nova_is_conductor: true
+    nova_is_consoleauth: true
+    nova_is_novncproxy: true
+    nova_is_scheduler: true
+    nova_is_compute: true
+    nova_virt_type: qemu
+  post_tasks:
+    - name: check if nova database is populated
+      command: mysql -s -u nova -p{{ nova_db_passwd }} -D nova -e 'SELECT * FROM migrate_version LIMIT 1;'
+      register: db_stat
+      ignore_errors: true
+      run_once: true
+      changed_when: false
+
+    - name: populate nova database
+      command: nova-manage db sync
+      become_user: nova
+      run_once: true
+      when: db_stat.rc != 0
+
+    - name: check if nova_api database is populated
+      command: mysql -s -u nova -p{{ nova_db_passwd }} -D nova_api -e 'SELECT * FROM migrate_version LIMIT 1;'
+      register: db_api_stat
+      ignore_errors: true
+      run_once: true
+      changed_when: false
+
+    - name: populate nova_api database
+      command: nova-manage api_db sync
+      become_user: nova
+      run_once: true
+      when: db_api_stat.rc != 0
+  roles:
+    - role: nova

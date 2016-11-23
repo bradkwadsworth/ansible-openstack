@@ -1,0 +1,11 @@
+---
+- name: install nova-consoleauth
+  package:
+    name: nova-consoleauth
+    state: present
+
+- name: maintain nova-consoleauth service
+  service:
+    name: nova-consoleauth
+    enabled: true
+    state: started

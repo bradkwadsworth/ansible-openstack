@@ -1,0 +1,7 @@
+---
+- name: restart neutron services
+  service:
+    name: "{{ item.key }}"
+    state: restarted
+  when: item.value.service_enable
+  with_dict: "{{ neutron_services }}"

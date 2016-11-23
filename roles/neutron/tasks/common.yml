@@ -1,0 +1,12 @@
+---
+- name: install neutron-common packages
+  package:
+    name: neutron-common
+    state: present
+
+- name: template /etc/neutron/neutron.conf
+  template:
+    dest: /etc/neutron/neutron.conf
+    src: neutron.conf.j2
+  notify:
+    - restart neutron services

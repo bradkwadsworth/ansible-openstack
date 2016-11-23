@@ -1,0 +1,12 @@
+---
+neutron_services:
+  neutron-server:
+    service_enable: "{{ neutron_is_api | bool }}"
+  neutron-openvswitch-agent:
+    service_enable: "{{ neutron_is_agent | bool }}"
+  neutron-l3-agent:
+    service_enable: "{{ neutron_is_l3 | bool }}"
+  neutron-dhcp-agent:
+    service_enable: "{{ neutron_is_dhcp | bool }}"
+  neutron-metadata-agent:
+    service_enable: "{{ neutron_is_metadata | bool }}"

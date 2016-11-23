@@ -1,0 +1,14 @@
+---
+- include: common.yml
+- include: api.yml
+  when: nova_is_api
+- include: conductor.yml
+  when: nova_is_conductor
+- include: consoleauth.yml
+  when: nova_is_consoleauth
+- include: novncproxy.yml
+  when: nova_is_novncproxy
+- include: scheduler.yml
+  when: nova_is_scheduler
+- include: compute.yml
+  when: nova_is_compute

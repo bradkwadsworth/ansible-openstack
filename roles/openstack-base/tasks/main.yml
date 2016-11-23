@@ -1,0 +1,15 @@
+---
+- name: Install ubuntu-cloud-key
+  package:
+    name: ubuntu-cloud-keyring
+    state: present
+
+- name: add openstack repo
+  apt_repository:
+    repo: 'deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/newton main'
+    state: present
+
+- name: instal openstack client
+  package:
+    name: python-openstackclient
+    state: present

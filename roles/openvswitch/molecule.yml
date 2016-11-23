@@ -1,0 +1,29 @@
+---
+driver:
+  name: vagrant
+vagrant:
+  platforms:
+    - name: xenial64
+      box: ubuntu/xenial64
+  providers:
+    - name: virtualbox
+      type: virtualbox
+      options:
+        memory: 1024
+        cpus: 2
+  instances:
+    - name: openvswitch
+      ansible_groups:
+        - group1
+      interfaces:
+        - network_name: private_network
+          type: static
+          ip: 192.168.33.10
+          auto_config: false
+        - network_name: private_network
+          type: static
+          ip: 192.168.34.10
+          auto_config: false
+
+verifier:
+  name: testinfra

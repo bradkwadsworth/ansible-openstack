@@ -1,0 +1,11 @@
+---
+- name: install nova-common
+  package:
+    name: nova-common
+    state: present
+
+- name: template /etc/nova/nova.conf
+  template:
+    dest: /etc/nova/nova.conf
+    src: nova.conf.j2
+  notify: restart nova services

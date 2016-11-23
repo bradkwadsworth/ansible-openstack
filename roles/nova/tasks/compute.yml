@@ -1,0 +1,10 @@
+---
+- name: install nova-compute
+  package:
+    name: nova-compute
+    state: present
+
+- name: maintain nova-compute service
+  service:
+    name: nova-compute
+    state: started

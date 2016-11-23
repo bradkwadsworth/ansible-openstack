@@ -1,0 +1,23 @@
+---
+- name: install packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mariadb-server
+    - mariadb-client
+    - python-pymysql
+    - python-mysqldb
+
+- name: template config files
+  template:
+    src: 99-openstack.cnf.j2
+    dest: /etc/mysql/mariadb.conf.d/99-openstack.cnf
+  notify:
+    - restart mariadb-server
+
+- name: maintain mariadb-server
+  service:
+    name: mysql
+    enabled: true
+    state: started

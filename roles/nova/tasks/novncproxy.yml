@@ -1,0 +1,11 @@
+---
+- name: install nova-novncproxy
+  package:
+    name: nova-novncproxy
+    state: present
+
+- name: maintain nova-novncproxy service
+  service:
+    name: nova-novncproxy
+    enabled: true
+    state: started

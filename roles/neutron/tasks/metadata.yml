@@ -1,0 +1,18 @@
+---
+- name: install neutron-metadata-agent
+  package:
+    name: neutron-metadata-agent
+    state: present
+
+- name: template /etc/neutron/metadata_agent.ini
+  template:
+    dest: /etc/neutron/metadata_agent.ini
+    src: metadata_agent.ini.j2
+  notify:
+    - restart neutron services
+
+- name: maintain neutron-metadata-agent
+  service:
+    name: neutron-metadata-agent
+    enabled: true
+    state: started

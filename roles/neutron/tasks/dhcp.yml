@@ -1,0 +1,18 @@
+---
+- name: install neutron-dhcp-agent
+  package:
+    name: neutron-dhcp-agent
+    state: present
+
+- name: template /etc/neutron/dhcp_agent.ini
+  template:
+    dest: /etc/neutron/dhcp_agent.ini
+    src: dhcp_agent.ini.j2
+  notify:
+    - restart neutron services
+
+- name: maintain neutron-dhcp-agent
+  service:
+    name: neutron-dhcp-agent
+    enabled: true
+    state: started

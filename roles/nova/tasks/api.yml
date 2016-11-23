@@ -1,0 +1,14 @@
+---
+- name: install nova-api packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pymysql
+    - nova-api
+
+- name: maintain nova-api service
+  service:
+    name: nova-api
+    enabled: true
+    state: started

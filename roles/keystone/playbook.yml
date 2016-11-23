@@ -1,0 +1,77 @@
+---
+- hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Gather facts
+      setup: # aka gather_facts
+  post_tasks:
+    - name: create keystone database
+      mysql_db:
+        name: keystone
+        state: present
+
+    - name: create database users
+      mysql_user:
+        name: keystone
+        password: password
+        host: localhost
+        priv: keystone.*:ALL
+        state: present
+
+  roles:
+    - role: mariadb
+
+- hosts: all
+  post_tasks:
+    - name: check if database is populated
+      command: mysql -s -u {{ keystone_db_user }} -p{{ keystone_db_passwd }} -D keystone -e 'SELECT * FROM migrate_version LIMIT 1;'
+      register: db_stat
+      ignore_errors: true
+      run_once: true
+      changed_when: true
+
+    - name: populate keystone database
+      command: keystone-manage db_sync
+      become_user: keystone
+      run_once: true
+      when: db_stat.rc != 0
+
+    - name: check if fernet tokens exist
+      stat:
+        path: /etc/keystone/fernet-keys/0
+      register: st_fernet
+
+    - name: setup fernet tokens
+      command: keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+      when: not st_fernet.stat.exists
+
+    - name: check if credentials exist
+      stat:
+        path: /etc/keystone/credential-keys/0
+      register: st_credential
+
+    - name: setup credentials
+      command: keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+      when: not st_credential.stat.exists
+
+    - name: check if keystone bootstrapped
+      command: openstack --os-identity-api-version 3 --os-project-name admin
+        --os-username admin --os-password password --os-auth-url http://localhost:35357/v3
+        --os-user-domain-name default --os-project-domain-name default endpoint list
+      register: st_bootstrap
+      ignore_errors: true
+      changed_when: false
+
+    - name: bootstrap auth and endpoints
+      command: "keystone-manage bootstrap --bootstrap-password {{ keystone_admin_passwd }}
+        --bootstrap-admin-url http://localhost:35357/v3/
+        --bootstrap-internal-url http://localhost:35357/v3/
+        --bootstrap-public-url http://localhost:5000/v3/
+        --bootstrap-region-id RegionOne"
+      when: st_bootstrap.rc != 0
+
+  roles:
+    - role: keystone

@@ -1,0 +1,14 @@
+---
+nova_services:
+  nova-api:
+    service_enabled: "{{ nova_is_api | bool }}"
+  nova-conductor:
+    service_enabled: "{{ nova_is_conductor | bool }}"
+  nova-consoleauth:
+    service_enabled: "{{ nova_is_consoleauth | bool }}"
+  nova-novncproxy:
+    service_enabled: "{{ nova_is_novncproxy | bool }}"
+  nova-scheduler:
+    service_enabled: "{{ nova_is_scheduler | bool }}"
+  nova-compute:
+    service_enabled: "{{ nova_is_compute | bool }}"

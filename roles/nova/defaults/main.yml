@@ -1,0 +1,20 @@
+---
+nova_is_api: false
+nova_is_conductor: false
+nova_is_consoleauth: false
+nova_is_novncproxy: false
+nova_is_scheduler: false
+nova_is_compute: false
+nova_db_passwd: password
+nova_db_host: localhost
+nova_messaging_passwd: password
+nova_messaging_host: localhost
+nova_keystone_host: localhost
+nova_keystone_passwd: password
+nova_memcached_servers: localhost:11211
+nova_my_ip: "{{ ansible_default_ipv4.address }}"
+nova_glance_host: localhost
+nova_neutron_host: localhost
+nova_neutron_passwd: password
+nova_novncproxy_host: localhost
+nova_virt_type: kvm

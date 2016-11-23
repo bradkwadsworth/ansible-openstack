@@ -1,0 +1,4 @@
+---
+mariadb_server_bind_address: 127.0.0.1
+mariadb_server_port: 3306
+mariadb_server_datadir: /var/lib/mysql

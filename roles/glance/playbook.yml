@@ -1,0 +1,41 @@
+---
+- hosts: all
+  gather_facts: False
+  pre_tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      changed_when: False
+    - name: Gather facts
+      setup: # aka gather_facts
+  post_tasks:
+    - name: create glance database
+      mysql_db:
+        name: glance
+        state: present
+
+    - name: create database users
+      mysql_user:
+        name: glance
+        password: password
+        host: localhost
+        priv: glance.*:ALL
+        state: present
+  roles:
+    - role: mariadb
+
+- hosts: all
+  post_tasks:
+    - name: check if database is populated
+      command: mysql -s -u {{ glance_db_user }} -p{{ glance_db_passwd }} -D glance -e 'SELECT * FROM migrate_version LIMIT 1;'
+      register: db_stat
+      ignore_errors: true
+      run_once: true
+      changed_when: true
+
+    - name: populate glance database
+      command: glance-manage db_sync
+      become_user: glance
+      run_once: true
+      when: db_stat.rc != 0
+  roles:
+    - role: glance

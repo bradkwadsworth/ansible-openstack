@@ -1,0 +1,11 @@
+---
+- name: install nova-scheduler
+  package:
+    name: nova-scheduler
+    state: present
+
+- name: maintain nova-scheduler service
+  service:
+    name: nova-scheduler
+    enabled: true
+    state: started

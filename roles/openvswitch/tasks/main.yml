@@ -1,0 +1,11 @@
+---
+- name: install openvswitch
+  package:
+    name: openvswitch-switch
+    state: present
+
+- name: maintain openvswitch-switch service
+  service:
+    name: openvswitch-switch
+    enabled: true
+    state: started

@@ -1,0 +1,7 @@
+---
+glance_db_user: glance
+glance_db_passwd: password
+glance_db_host: localhost
+glance_keystone_host: localhost
+glance_keystone_passwd: password
+glance_memcached_servers: localhost:11211

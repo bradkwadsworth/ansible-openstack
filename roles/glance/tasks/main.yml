@@ -1,0 +1,29 @@
+---
+- name: install glance packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python-pymysql
+    - glance
+
+- name: template glance configs
+  template:
+    dest: "{{ item.dest }}"
+    src: "{{ item.src }}"
+  with_items:
+    - dest: /etc/glance/glance-api.conf
+      src: glance-api.conf.j2
+    - dest: /etc/glance/glance-registry.conf
+      src: glance-registry.conf.j2
+  notify:
+    - restart glance services
+
+- name: maintain glance services
+  service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  with_items:
+    - glance-registry
+    - glance-api
