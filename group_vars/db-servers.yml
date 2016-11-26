@@ -1,0 +1,5 @@
+---
+keystone_db_passwd: password
+glance_db_passwd: password
+neutron_db_passwd: password
+nova_db_passwd: password

@@ -1,0 +1,159 @@
+---
+- hosts: keystone-servers
+  remote_user: super
+  become: yes
+  vars:
+    keystone_projects:
+      - name: service
+        desc: Service Project
+        domain: default
+      - name: demo
+        desc: Demo Project
+        domain: default
+    keystone_users:
+      - name: demo
+        passwd: password
+        domain: default
+      - name: glance
+        passwd: password
+        domain: default
+    keystone_roles:
+      - user
+    keystone_role_add:
+      - user: demo
+        project: demo
+        role: user
+      - user: glance
+        project: service
+        role: admin
+    keystone_services:
+      - name: glance
+        desc: OpenStack Image
+        type: image
+  post_tasks:
+    - name: check if database is populated
+      command: mysql -s -u {{ keystone_db_user }} -p{{ keystone_db_passwd }} -h {{ keystone_db_host }} -D keystone -e 'SELECT * FROM migrate_version LIMIT 1;'
+      register: db_stat
+      ignore_errors: true
+      run_once: true
+      changed_when: false
+
+    - name: populate keystone database
+      command: keystone-manage db_sync
+      become_user: keystone
+      run_once: true
+      when: db_stat.rc != 0
+
+    - name: check if fernet tokens exist
+      stat:
+        path: /etc/keystone/fernet-keys/0
+      register: st_fernet
+
+    - name: setup fernet tokens
+      command: keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+      when: not st_fernet.stat.exists
+
+    - name: check if credentials exist
+      stat:
+        path: /etc/keystone/credential-keys/0
+      register: st_credential
+
+    - name: setup credentials
+      command: keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+      when: not st_credential.stat.exists
+
+    - name: check if keystone bootstrapped
+      command: openstack endpoint list
+      environment: "{{ keystone_auth }}"
+      register: st_bootstrap
+      run_once: true
+      ignore_errors: true
+      changed_when: false
+
+    - name: bootstrap auth and endpoints
+      command: "keystone-manage bootstrap --bootstrap-password {{ keystone_admin_passwd }}
+        --bootstrap-admin-url http://localhost:35357/v3/
+        --bootstrap-internal-url http://localhost:35357/v3/
+        --bootstrap-public-url http://localhost:5000/v3/
+        --bootstrap-region-id RegionOne"
+      when: st_bootstrap.rc != 0
+      run_once: true
+
+    - name: check if keystone projects exist
+      command: "openstack project show {{ item.name }}"
+      environment: "{{ keystone_auth }}"
+      with_items: "{{ keystone_projects }}"
+      register: st_projects
+      run_once: true
+      ignore_errors: true
+      changed_when: false
+
+    - name: create keystone projects
+      command: "openstack project create --domain {{ item.0.domain }} --description \"{{ item.0.desc }}\" {{ item.0.name }}"
+      environment: "{{ keystone_auth }}"
+      when: item.1.rc != 0
+      with_together:
+        - "{{ keystone_projects }}"
+        - "{{ st_projects.results }}"
+
+    - name: check if keystone users exist
+      command: "openstack user show {{ item.name }}"
+      environment: "{{ keystone_auth }}"
+      with_items: "{{ keystone_users }}"
+      register: st_users
+      run_once: true
+      ignore_errors: true
+      changed_when: false
+
+    - name: create keystone users
+      command: "openstack user create --domain {{ item.0.domain }} --password {{ item.0.passwd }} {{ item.0.name }}"
+      environment: "{{ keystone_auth }}"
+      when: item.1.rc != 0
+      with_together:
+        - "{{ keystone_users }}"
+        - "{{ st_users.results }}"
+
+    - name: check if keystone roles exist
+      command: "openstack role show {{ item }}"
+      environment: "{{ keystone_auth }}"
+      with_items: "{{ keystone_roles }}"
+      register: st_roles
+      run_once: true
+      ignore_errors: true
+      changed_when: false
+
+    - name: create keystone roles
+      command: "openstack role create {{ item.0 }}"
+      environment: "{{ keystone_auth }}"
+      when: item.1.rc != 0
+      with_together:
+        - "{{ keystone_roles }}"
+        - "{{ st_roles.results }}"
+
+    - name: add users and project to roles
+      command: "openstack role add --project {{ item.project}} --user {{ item.user }} {{ item.role }}"
+      environment: "{{ keystone_auth }}"
+      with_items: "{{ keystone_role_add }}"
+      run_once: true
+      changed_when: false
+
+    - name: check if keystone services exist
+      command: "openstack service show {{ item.name }}"
+      environment: "{{ keystone_auth }}"
+      with_items: "{{ keystone_services }}"
+      register: st_services
+      run_once: true
+      ignore_errors: true
+      changed_when: false
+
+    - name: create keystone services
+      command: "openstack service create --name {{ item.0.name }} --description \"{{ item.0.desc }}\" {{ item.0.type }}"
+      environment: "{{ keystone_auth }}"
+      when: item.1.rc != 0
+      with_together:
+        - "{{ keystone_services }}"
+        - "{{ st_services.results }}"
+
+
+  roles:
+    - role: keystone

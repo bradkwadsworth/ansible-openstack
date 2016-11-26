@@ -1,0 +1,21 @@
+---
+- hosts: messaging-servers
+  remote_user: super
+  become: yes
+  roles:
+    - role: rabbitmq
+  post_tasks:
+    - name: create /openstack rabbitmq vhost
+      rabbitmq_vhost:
+        name: /openstack
+        state: present
+
+    - name: create rabbitmq users
+      rabbitmq_user:
+        user: openstack
+        password: "{{ openstack_rabbitmq_password }}"
+        vhost: /openstack
+        configure_priv: .*
+        read_priv: .*
+        write_priv: .*
+        state: present

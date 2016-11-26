@@ -1,0 +1,46 @@
+---
+- hosts: db-servers
+  remote_user: super
+  become: yes
+  vars:
+    mariadb_server_bind_address: 0.0.0.0
+    mysql_users:
+      - name: keystone
+        password: "{{ keystone_db_passwd }}"
+        priv: keystone.*:ALL
+      - name: glance
+        password: "{{ glance_db_passwd }}"
+        priv: glance.*:ALL
+      - name: neutron
+        password: "{{ neutron_db_passwd }}"
+        priv: neutron.*:ALL
+      - name: nova
+        password: "{{ nova_db_passwd }}"
+        priv: nova.*:ALL/nova_api.*:ALL
+    mysql_hosts:
+      - localhost
+      - "{{ ansible_ens4.ipv4.address | regex_replace(ansible_ens4.ipv4.address.split('.')[-1], '%') }}"
+  roles:
+    - role: mariadb
+  post_tasks:
+    - name: create openstack databases
+      mysql_db:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - keystone
+        - glance
+        - neutron
+        - nova
+        - nova_api
+
+    - name: create database users
+      mysql_user:
+        name: "{{ item[0].name }}"
+        password: "{{ item[0].password }}"
+        host: "{{ item[1] }}"
+        priv: "{{ item[0].priv }}"
+        state: present
+      with_nested:
+         - "{{ mysql_users }}"
+         - "{{ mysql_hosts }}"

@@ -639,7 +639,7 @@ log_dir = /var/log/keystone
 # Deprecated group/name - [DATABASE]/sql_connection
 # Deprecated group/name - [sql]/connection
 #connection = <None>
-connection =  mysql+pymysql://{{ keystone_db_user }}:{{ keystone_db_passwd }}@{{ keystone_db_host}}/keystone
+connection = mysql+pymysql://{{ keystone_db_user }}:{{ keystone_db_passwd }}@{{ keystone_db_host}}/keystone
 
 # The SQLAlchemy connection string to use to connect to the slave database.
 # (string value)
